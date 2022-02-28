@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace microservice.Infrastructure.Entities.DB
 {
-    public class User
+    public class Appointment
     {
         public Guid Id { get; set; }
-         
-        [StringLength(10)]
-        public string PhoneNumber { get; set; }
+        public int BarberShopId { get; set; }
+        public Guid UserId { get; set; }
+        public DateTime Date { get; set; }
+        public bool HasBeenHandeled { get; set; }
     }
 }

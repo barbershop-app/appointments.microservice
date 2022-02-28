@@ -17,11 +17,11 @@ namespace microservice.Data.SQL
             this._context = context;
         }
 
-        private IUserRepository _userRepository;
+        private IAppointmentRepository _appointmentRepository;
 
 
 
-        public IUserRepository Users => _userRepository ??= new UserRepository(_context);
+        public IAppointmentRepository Appointments => _appointmentRepository ??= new AppointmentRepository(_context);
 
 
         public int Commit()

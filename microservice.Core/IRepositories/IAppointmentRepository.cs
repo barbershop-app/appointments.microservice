@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace microservice.Core.IRepositories
 {
-    public interface IUserRepository : IRepository<User>
+    public interface IAppointmentRepository : IRepository<Appointment>
     {
-        IEnumerable<User> GetAllAsQueryable();
-        User GetByIdIncluded(Guid id);
+        IEnumerable<Appointment> GetAllAsQueryable();
+        Appointment GetByIdIncluded(Guid id);
     }
 }

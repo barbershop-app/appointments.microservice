@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using microservice.Infrastructure.Entities.DB;
-using microservice.Infrastructure.Entities.DTOs;
+
 
 namespace microservice.Web.API.Internal
 {
@@ -8,7 +8,7 @@ namespace microservice.Web.API.Internal
     {
         public AutoMapping()
         {
-            CreateMap<UserDTOs.Create, User>();
+            //CreateMap<UserDTOs.Create, Appointment>();
         }
     }
 }

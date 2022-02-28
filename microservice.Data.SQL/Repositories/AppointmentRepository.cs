@@ -8,21 +8,21 @@ using System.Threading.Tasks;
 
 namespace microservice.Data.SQL.Repositories
 {
-    public class UserRepository : Repository<User>, IUserRepository
+    public class AppointmentRepository : Repository<Appointment>, IAppointmentRepository
     {
         private AppointmentsContext? _context { get { return Context as AppointmentsContext; } }
-        public UserRepository(AppointmentsContext context) : base(context)
+        public AppointmentRepository(AppointmentsContext context) : base(context)
         {
 
         }
-        public User GetByIdIncluded(Guid id)
+        public Appointment GetByIdIncluded(Guid id)
         {
-            return _context.Users.Where(s => s.Id == id).FirstOrDefault();
+            return _context.Appointments.Where(s => s.Id == id).FirstOrDefault();
         }
 
-        public IEnumerable<User> GetAllAsQueryable()
+        public IEnumerable<Appointment> GetAllAsQueryable()
         {
-            return _context.Users.AsQueryable();
+            return _context.Appointments.AsQueryable();
         }
     }
 }

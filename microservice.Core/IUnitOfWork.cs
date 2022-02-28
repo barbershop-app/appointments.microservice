@@ -9,7 +9,7 @@ namespace microservice.Core
 {
     public interface IUnitOfWork
     {
-        IUserRepository Users { get; }
+        IAppointmentRepository Appointments { get; }
 
         int Commit();
     }
