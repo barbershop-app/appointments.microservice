@@ -17,11 +17,13 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="morelinq" Version="3.3.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\microservice.Data.Access\microservice.Data.Access.csproj" />
     <ProjectReference Include="..\microservice.Data.SQL\microservice.Data.SQL.csproj" />
     <ProjectReference Include="..\microservice.Infrastructure\microservice.Infrastructure.csproj" />
   </ItemGroup>

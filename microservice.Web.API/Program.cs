@@ -1,4 +1,6 @@
 using microservice.Core;
+using microservice.Core.IServices;
+using microservice.Data.Access.Services;
 using microservice.Data.SQL;
 using microservice.Web.API.Authentication;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +15,17 @@ builder.Host.UseSerilog((context, lc) => lc
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddHttpClient("localhost").ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
+}); 
+
+
 builder.Services.AddDbContext<AppointmentsContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("sqlCon"), b => b.MigrationsAssembly("microservice.Data.SQL")));
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSwaggerGen(options => options.CustomSchemaIds(type => type.ToString()));
 builder.Services.AddTransient<IUnitOfWork ,UnitOfWork>();
+builder.Services.AddTransient<IAppointmentService ,AppointmentsService>();
 
 
 var app = builder.Build();

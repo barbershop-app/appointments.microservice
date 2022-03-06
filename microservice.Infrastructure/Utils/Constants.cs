@@ -11,5 +11,10 @@ namespace microservice.Infrastructure.Utils
         public const string JWT_SECRET = "YWUzNGdhc2VnZmEzZ2FzZ2FnMw==";
 
         public static int JWT_EXPIRATION_HOURS = 3;
+
+        public static string CONFIGURATION_MICROSERVICE_API = "API:configuration-microservice";
+        public static string USERS_MICROSERVICE_API = "API:users-microservice";
+
+
     }
 }

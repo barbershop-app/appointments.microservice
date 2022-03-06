@@ -17,6 +17,18 @@ namespace microservice.Data.Access.Services
             _unitOfWork = unitOfWork;
         }
 
+        public Appointment GetById(Guid Id)
+        {
+            return _unitOfWork.Appointments.GetByIdIncluded(Id);
+        }
+
+
+        public IEnumerable<Appointment> GetAllAsQueryable()
+        {
+            return _unitOfWork.Appointments.GetAllAsQueryable();
+        }
+
+
         public bool Create(Appointment appointment)
         {
             _unitOfWork.Appointments.Add(appointment);
@@ -29,10 +41,14 @@ namespace microservice.Data.Access.Services
             return _unitOfWork.Commit() > 0;
         }
 
-        public bool Delete(Appointment appointment)
+        public bool Delete(Appointment appointment, bool commit)
         {
             _unitOfWork.Appointments.Remove(appointment);
+
+            if (commit)
             return _unitOfWork.Commit() > 0;
+
+            return true;
         }
     }
 }
