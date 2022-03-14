@@ -1,5 +1,6 @@
 ﻿using microservice.Core.IRepositories;
 using microservice.Infrastructure.Entities.DB;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,5 +25,13 @@ namespace microservice.Data.SQL.Repositories
         {
             return _context.Appointments.AsQueryable();
         }
+
+
+        public IEnumerable<Appointment> GetAllAsQueryableAsNoTracking()
+        {
+            return _context.Appointments.AsNoTracking().AsQueryable();
+
+        }
+
     }
 }

@@ -10,6 +10,8 @@ namespace microservice.Core.IRepositories
     public interface IAppointmentRepository : IRepository<Appointment>
     {
         IEnumerable<Appointment> GetAllAsQueryable();
+        IEnumerable<Appointment> GetAllAsQueryableAsNoTracking();
         Appointment GetByIdIncluded(Guid id);
+
     }
 }

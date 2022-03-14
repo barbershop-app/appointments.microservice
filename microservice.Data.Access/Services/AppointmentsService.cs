@@ -23,9 +23,13 @@ namespace microservice.Data.Access.Services
         }
 
 
-        public IEnumerable<Appointment> GetAllAsQueryable()
+        public IEnumerable<Appointment> GetAllAsQueryable(bool track)
         {
-            return _unitOfWork.Appointments.GetAllAsQueryable();
+            if (track)
+                return _unitOfWork.Appointments.GetAllAsQueryable();
+
+            return _unitOfWork.Appointments.GetAllAsQueryableAsNoTracking();
+
         }
 
 

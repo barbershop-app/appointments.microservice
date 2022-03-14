@@ -14,7 +14,6 @@ namespace microservice.Data.SQL
         {
         }
 
-        //Tables
         public DbSet<Appointment> Appointments { get; set; }
 
     }

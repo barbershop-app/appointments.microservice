@@ -12,7 +12,7 @@ using System.Net;
 
 namespace microservice.Web.API.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AppointmentsController : ControllerBase
@@ -32,6 +32,62 @@ namespace microservice.Web.API.Controllers
             _configuration = configuration;
         }
 
+
+
+        [HttpPost]
+        [Route("AvailableSlots")]
+        public async Task<IActionResult> AvailableSlots([FromBody] AppointmentDTOs.AvailableSlots dto)
+        {
+
+            try
+            {
+                if (DateTime.Today > dto.Date)
+                    return BadRequest("Invalid Date.");
+
+
+                var httpClient = _httpClientFactory.CreateClient("localhost");
+
+                #region Get the day booking limit
+                var values = new
+                {
+                    BarberShopId = dto.BarberShopId,
+                    Day = dto.Date.DayOfWeek
+                };
+
+
+                var json = JsonConvert.SerializeObject(values);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+
+
+                var response = await httpClient.PostAsync($"{_configuration.GetValue<string>(Constants.CONFIGURATION_MICROSERVICE_API)}/Management/GetBookingDayLimit", content);
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                    throw new Exception(@$"'{Constants.CONFIGURATION_MICROSERVICE_API}/Management/GetBookingDayLimit' responded with, {{StatusCode :{response.StatusCode}}}");
+
+
+                var bookingLimit = int.Parse(await response.Content.ReadAsStringAsync());
+
+                #endregion
+
+
+                var appointments = _appointmentService.GetAllAsQueryable(false).Where(x => x.Date.ToShortDateString() == dto.Date.ToShortDateString());
+
+                if (appointments.Count() <= bookingLimit)
+                    return Ok(bookingLimit - appointments.Count());
+
+                return BadRequest("There are no avialable Slots on this date!");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest("Something went wrong.");
+            }
+
+
+
+        }
 
         [HttpPost]
         [Route("Create")]
@@ -82,7 +138,7 @@ namespace microservice.Web.API.Controllers
 
                 #region Check if there are avialable spots to book and if the user already has a registered booking on this day
 
-                var appointments = _appointmentService.GetAllAsQueryable().Where(x => x.Date.ToShortDateString() == dto.Date.ToShortDateString());
+                var appointments = _appointmentService.GetAllAsQueryable(false).Where(x => x.Date.ToShortDateString() == dto.Date.ToShortDateString());
 
                 if (appointments.Any(x => x.UserId == dto.UserId))
                     return BadRequest("This user already has a registered booking on this day.");
@@ -94,14 +150,25 @@ namespace microservice.Web.API.Controllers
 
 
 
-
                 var appointment = _mapper.Map<Appointment>(dto);
 
                 var res = _appointmentService.Create(appointment);
 
 
                 if (res)
+                {
+                    _ = Task.Run(() =>
+                      {
+
+                          //Use SignalR to update the user on how much time left for his appointment
+
+
+                      });
+
+
+
                     return Ok("Appointment has been booked.");
+                }
 
 
 

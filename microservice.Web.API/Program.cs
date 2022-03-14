@@ -15,6 +15,15 @@ builder.Host.UseSerilog((context, lc) => lc
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+options.AddDefaultPolicy(builder =>
+{
+    builder.AllowAnyHeader()
+    .AllowAnyMethod()
+    .SetIsOriginAllowed(origin => true)
+    .AllowCredentials();
+}));
+
 builder.Services.AddHttpClient("localhost").ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
 {
     ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }

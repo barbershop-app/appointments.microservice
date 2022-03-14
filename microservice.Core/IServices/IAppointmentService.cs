@@ -13,6 +13,6 @@ namespace microservice.Core.IServices
         public bool Update(Appointment oldAppointment, Appointment appointment);
         public bool Delete(Appointment appointment, bool commit);
         public Appointment GetById(Guid Id);
-        public IEnumerable<Appointment> GetAllAsQueryable();
+        public IEnumerable<Appointment> GetAllAsQueryable(bool track);
     }
 }

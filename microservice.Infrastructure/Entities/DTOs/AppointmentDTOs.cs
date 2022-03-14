@@ -21,5 +21,11 @@ namespace microservice.Infrastructure.Entities.DTOs
             public bool HasBeenHandeled { get; set; }
         }
 
+        public class AvailableSlots
+        {
+            public int BarberShopId { get; set; }
+            public DateTime Date { get; set; }
+        }
+
     }
 }
