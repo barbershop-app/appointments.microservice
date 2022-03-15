@@ -2,7 +2,6 @@ using microservice.Core;
 using microservice.Core.IServices;
 using microservice.Data.Access.Services;
 using microservice.Data.SQL;
-using microservice.Web.API.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -35,6 +34,8 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSwaggerGen(options => options.CustomSchemaIds(type => type.ToString()));
 builder.Services.AddTransient<IUnitOfWork ,UnitOfWork>();
 builder.Services.AddTransient<IAppointmentService ,AppointmentsService>();
+builder.Services.AddScoped<IHttpClientService, HttpClientService>();
+
 
 
 var app = builder.Build();
@@ -63,8 +64,6 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.UseAuthentication();
-
-app.UseMiddleware<JWTMiddleware>();
 
 app.MapControllers();
 

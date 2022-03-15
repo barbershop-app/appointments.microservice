@@ -3,7 +3,6 @@ using microservice.Core.IServices;
 using microservice.Infrastructure.Entities.DB;
 using microservice.Infrastructure.Entities.DTOs;
 using microservice.Infrastructure.Utils;
-using microservice.Web.API.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -12,7 +11,6 @@ using System.Net;
 
 namespace microservice.Web.API.Controllers
 {
-    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AppointmentsController : ControllerBase
@@ -20,16 +18,14 @@ namespace microservice.Web.API.Controllers
         readonly IMapper _mapper;
         readonly ILogger<AppointmentsController> _logger;
         readonly IAppointmentService _appointmentService;
-        readonly IHttpClientFactory _httpClientFactory;
-        readonly IConfiguration _configuration;
+        readonly IHttpClientService _httpClientFactoryService;
 
-        public AppointmentsController(IMapper mapper, ILogger<AppointmentsController> logger, IAppointmentService appointmentService, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public AppointmentsController(IMapper mapper, ILogger<AppointmentsController> logger, IAppointmentService appointmentService, IHttpClientService httpClientFactoryService)
         {
             _mapper = mapper;
             _logger = logger;
             _appointmentService = appointmentService;
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
+            _httpClientFactoryService = httpClientFactoryService;
         }
 
 
@@ -38,37 +34,13 @@ namespace microservice.Web.API.Controllers
         [Route("AvailableSlots")]
         public async Task<IActionResult> AvailableSlots([FromBody] AppointmentDTOs.AvailableSlots dto)
         {
-
             try
             {
                 if (DateTime.Today > dto.Date)
                     return BadRequest("Invalid Date.");
 
 
-                var httpClient = _httpClientFactory.CreateClient("localhost");
-
-                #region Get the day booking limit
-                var values = new
-                {
-                    BarberShopId = dto.BarberShopId,
-                    Day = dto.Date.DayOfWeek
-                };
-
-
-                var json = JsonConvert.SerializeObject(values);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-
-
-                var response = await httpClient.PostAsync($"{_configuration.GetValue<string>(Constants.CONFIGURATION_MICROSERVICE_API)}/Management/GetBookingDayLimit", content);
-
-                if (response.StatusCode != HttpStatusCode.OK)
-                    throw new Exception(@$"'{Constants.CONFIGURATION_MICROSERVICE_API}/Management/GetBookingDayLimit' responded with, {{StatusCode :{response.StatusCode}}}");
-
-
-                var bookingLimit = int.Parse(await response.Content.ReadAsStringAsync());
-
-                #endregion
+                var bookingLimit = await _httpClientFactoryService.GetBookingDayLimit(dto.BarberShopId, dto.Date.DayOfWeek);
 
 
                 var appointments = _appointmentService.GetAllAsQueryable(false).Where(x => x.Date.ToShortDateString() == dto.Date.ToShortDateString());
@@ -84,9 +56,6 @@ namespace microservice.Web.API.Controllers
                 _logger.LogError(ex.ToString());
                 return BadRequest("Something went wrong.");
             }
-
-
-
         }
 
         [HttpPost]
@@ -95,48 +64,12 @@ namespace microservice.Web.API.Controllers
         {
             try
             {
-                var httpClient = _httpClientFactory.CreateClient("localhost");
 
-                #region Check if the user is active
-
-                var response = await httpClient.GetAsync($"{_configuration.GetValue<string>(Constants.USERS_MICROSERVICE_API)}/Users/IsActive/{dto.UserId}");
+                await _httpClientFactoryService.CheckIfUserIsActive(dto.UserId);
 
 
-                if (response.StatusCode != HttpStatusCode.OK)
-                    throw new Exception(@$"'{Constants.USERS_MICROSERVICE_API}/Users/IsActive' responded with, {{StatusCode :{response.StatusCode}}}");
+                var bookingLimit = await _httpClientFactoryService.GetBookingDayLimit(dto.BarberShopId, dto.Date.DayOfWeek);
 
-                #endregion
-
-
-
-                #region Get the day booking limit
-                var values = new
-                {
-                    BarberShopId = dto.BarberShopId,
-                    Day = dto.Date.DayOfWeek
-                };
-
-
-                var json = JsonConvert.SerializeObject(values);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-
-
-                 response = await httpClient.PostAsync($"{_configuration.GetValue<string>(Constants.CONFIGURATION_MICROSERVICE_API)}/Management/GetBookingDayLimit", content);
-
-                if (response.StatusCode != HttpStatusCode.OK)
-                    throw new Exception(@$"'{Constants.CONFIGURATION_MICROSERVICE_API}/Management/GetBookingDayLimit' responded with, {{StatusCode :{response.StatusCode}}}");
-                
-
-
-
-                var bookingLimit = int.Parse(await response.Content.ReadAsStringAsync());
-
-                #endregion
-
-
-
-                #region Check if there are avialable spots to book and if the user already has a registered booking on this day
 
                 var appointments = _appointmentService.GetAllAsQueryable(false).Where(x => x.Date.ToShortDateString() == dto.Date.ToShortDateString());
 
@@ -145,8 +78,6 @@ namespace microservice.Web.API.Controllers
 
                 if (appointments.Count() >= bookingLimit)
                     return BadRequest("There are no available spots for booking on this day.");
-
-                #endregion
 
 
 
@@ -161,7 +92,6 @@ namespace microservice.Web.API.Controllers
                       {
 
                           //Use SignalR to update the user on how much time left for his appointment
-
 
                       });
 
