@@ -29,6 +29,7 @@ namespace microservice.Data.Access.Services
 
             using (var response = await httpClient.GetAsync($"{_configuration.GetValue<string>(Constants.USERS_MICROSERVICE_API)}/Users/IsActive/{userId}"))
             {
+                //I'm using EnsureSuccess because I don't want to handle BadRequests and there is no reason to return them to the users. 
                 response.EnsureSuccessStatusCode();
             }
         }
