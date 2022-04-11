@@ -67,6 +67,11 @@ app.UseAuthentication();
 
 app.MapControllers();
 
-app.UseSwaggerUI();
+app.UseSwaggerUI(options =>
+{
+    options.RoutePrefix = String.Empty;
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "configuration-microservice");
+    options.InjectStylesheet("/swagger/custom.css");
+});
 
 app.Run();
