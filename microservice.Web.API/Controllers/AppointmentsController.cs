@@ -37,7 +37,7 @@ namespace microservice.Web.API.Controllers
             try
             {
                 if (DateTime.Today > dto.Date)
-                    return BadRequest("Invalid Date.");
+                    return BadRequest(new { message = "Invalid Date." });
 
 
                 var bookingLimit = await _httpClientFactoryService.GetBookingDayLimit(dto.BarberShopId, dto.Date.DayOfWeek);
@@ -46,15 +46,15 @@ namespace microservice.Web.API.Controllers
                 var appointments = _appointmentService.GetAllAsQueryable(false).Where(x => x.Date.ToShortDateString() == dto.Date.ToShortDateString());
 
                 if (appointments.Count() <= bookingLimit)
-                    return Ok(bookingLimit - appointments.Count());
+                    return Ok(new { availableSlots = bookingLimit - appointments.Count() });
 
-                return BadRequest("There are no avialable Slots on this date!");
+                return BadRequest(new { message = "There are no avialable Slots on this date!" });
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.ToString());
-                return BadRequest("Something went wrong.");
+                return BadRequest(new { message = "Something went wrong." });
             }
         }
 
@@ -74,10 +74,10 @@ namespace microservice.Web.API.Controllers
                 var appointments = _appointmentService.GetAllAsQueryable(false).Where(x => x.Date.ToShortDateString() == dto.Date.ToShortDateString());
 
                 if (appointments.Any(x => x.UserId == dto.UserId))
-                    return BadRequest("This user already has a registered booking on this day.");
+                    return BadRequest(new { message = "This user already has a registered booking on this day." });
 
                 if (appointments.Count() >= bookingLimit)
-                    return BadRequest("There are no available spots for booking on this day.");
+                    return BadRequest(new { message = "There are no available spots for booking on this day." });
 
 
 
@@ -97,18 +97,18 @@ namespace microservice.Web.API.Controllers
 
 
 
-                    return Ok("Appointment has been booked.");
+                    return Ok(new { message = "Appointment has been booked." });
                 }
 
 
 
-                return BadRequest("Appointment has not been booked.");
+                return BadRequest(new { message = "Appointment has not been booked." });
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.ToString());
-                return BadRequest("Something went wrong.");
+                return BadRequest(new { message = "Something went wrong." });
             }
 
         }
@@ -123,7 +123,7 @@ namespace microservice.Web.API.Controllers
                 var oldAppointment = _appointmentService.GetById(dto.Id);
 
                 if (oldAppointment == null)
-                    return BadRequest("Appointment does not exist.");
+                    return BadRequest(new { message = "Appointment does not exist." });
 
                 var appointment = _mapper.Map<Appointment>(dto);
 
@@ -132,17 +132,17 @@ namespace microservice.Web.API.Controllers
 
 
                 if (res)
-                    return Ok("Appointment has been updated.");
+                    return Ok(new { message = "Appointment has been updated." });
 
 
 
-                return BadRequest("Appointment has not been updated.");
+                return BadRequest(new { message = "Appointment has not been updated." });
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.ToString());
-                return BadRequest("Something went wrong.");
+                return BadRequest(new { message = "Something went wrong." });
             }
 
         }
@@ -156,7 +156,7 @@ namespace microservice.Web.API.Controllers
                 var appointment = _appointmentService.GetById(id);
 
                 if (appointment == null)
-                    return BadRequest("Appointment does not exist.");
+                    return BadRequest(new { message = "Appointment does not exist." });
 
                
 
@@ -164,17 +164,17 @@ namespace microservice.Web.API.Controllers
 
 
                 if (res)
-                    return Ok("Appointment has been deleted.");
+                    return Ok(new { message = "Appointment has been deleted." });
 
 
 
-                return BadRequest("Appointment has not been deleted.");
+                return BadRequest(new { message = "Appointment has not been deleted." });
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.ToString());
-                return BadRequest("Something went wrong.");
+                return BadRequest(new { message = "Something went wrong." });
 
             }
 
