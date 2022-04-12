@@ -30,6 +30,83 @@ namespace microservice.Web.API.Controllers
 
 
 
+
+        [HttpGet]
+        [Route("GetBookedAppointment/{Id}")]
+        public IActionResult GetBookedAppointments(Guid Id)
+        {
+            try
+            {
+                var appointment = _appointmentService.GetAllAsQueryable(false).Where(x => x.UserId == Id && x.Date > DateTime.Today).FirstOrDefault();
+
+                if (appointment == null)
+                    return BadRequest(new { message = "User has no booked appointments." });
+
+
+
+                var todayAppointments = _appointmentService.GetAllAsQueryable(false).Where(x => x.Date.ToShortDateString() == DateTime.Today.ToShortDateString() && !x.HasBeenHandeled);
+
+
+                int numberInQueue = todayAppointments.Where(x => x.Date < appointment.Date).Count();
+
+
+         
+                    return Ok(new {
+                        Id = appointment.Id,
+                        Date = appointment.Date,
+                        HasBeenHandeled = appointment.HasBeenHandeled,
+                        numberInQueue = numberInQueue,
+                    }); 
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest(new { message = "Something went wrong." });
+            }
+        }
+
+
+        [HttpGet]
+        [Route("GetTodayAppointments")]
+        public IActionResult GetTodayAppointments()
+        {
+            try
+            {
+                var appointments = _appointmentService.GetAllAsQueryable(false).Where(x => x.Date.ToShortDateString() == DateTime.Today.ToShortDateString());
+
+
+                var filteredAppointments = new List<object>();
+
+                foreach (var appointment in appointments)
+                {
+                    filteredAppointments.Add(new
+                    {
+                        Id = appointment.Id,
+                        Date = appointment.Date,
+                        HasBeenHandeled = appointment.HasBeenHandeled
+                    });
+                }
+
+
+                if (appointments.Count() != 0)
+                    return Ok(new
+                    {
+                        bookedAppointments = filteredAppointments
+                    });
+
+                return BadRequest(new { message = "There are no appointments for today." });
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest(new { message = "Something went wrong." });
+            }
+        }
+
+
         [HttpPost]
         [Route("AvailableSlots")]
         public async Task<IActionResult> AvailableSlots([FromBody] AppointmentDTOs.AvailableSlots dto)
@@ -64,6 +141,9 @@ namespace microservice.Web.API.Controllers
         {
             try
             {
+                if (DateTime.Today > dto.Date)
+                    return BadRequest(new { message = "Invalid Date." });
+
 
                 await _httpClientFactoryService.CheckIfUserIsActive(dto.UserId);
 
@@ -73,11 +153,14 @@ namespace microservice.Web.API.Controllers
 
                 var appointments = _appointmentService.GetAllAsQueryable(false).Where(x => x.Date.ToShortDateString() == dto.Date.ToShortDateString());
 
-                if (appointments.Any(x => x.UserId == dto.UserId))
-                    return BadRequest(new { message = "This user already has a registered booking on this day." });
-
                 if (appointments.Count() >= bookingLimit)
                     return BadRequest(new { message = "There are no available spots for booking on this day." });
+
+
+                var bookedAppointment = _appointmentService.GetAllAsQueryable(false).Where(x => x.UserId == dto.UserId && x.Date > DateTime.Today).FirstOrDefault();
+
+                if (bookedAppointment != null)
+                    return BadRequest(new {message = "You already have an appointment booked on this day."});
 
 
 
@@ -87,18 +170,8 @@ namespace microservice.Web.API.Controllers
 
 
                 if (res)
-                {
-                    _ = Task.Run(() =>
-                      {
-
-                          //Use SignalR to update the user on how much time left for his appointment
-
-                      });
-
-
-
                     return Ok(new { message = "Appointment has been booked." });
-                }
+  
 
 
 

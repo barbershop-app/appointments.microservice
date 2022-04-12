@@ -35,6 +35,10 @@ namespace microservice.Data.Access.Services
 
         public bool Create(Appointment appointment)
         {
+
+            var newDate = new DateTime(appointment.Date.Year, appointment.Date.Month, appointment.Date.Day,DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+            appointment.Date = newDate;
+
             _unitOfWork.Appointments.Add(appointment);
             return _unitOfWork.Commit() > 0;
         }
